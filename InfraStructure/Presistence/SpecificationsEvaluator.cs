@@ -15,12 +15,32 @@ namespace Persistence
         {
             IQueryable<TEntity> query = inputquery;
 
-            if(spec.Criteria is not null)
+
+
+            // Check Criteria To Filter
+
+            if (spec.Criteria is not null)
             {
-                query = query.Where(spec.Criteria);
+                query = inputquery.Where(spec.Criteria); // _context.Products.Where(P => P.Id == 12).FirstOr
             }
 
-            spec.Includes.Aggregate(query , (query , includeExpresstion ) => query.Include(includeExpresstion));
+            // Check Expression Which To Order By With
+            if (spec.OrderBy is not null)
+            {
+                query = query.OrderBy(spec.OrderBy);
+            }
+            else if (spec.OrderByDescending is not null)
+            {
+                query = query.OrderByDescending(spec.OrderByDescending);
+            }
+
+
+            if(spec.IsPaginatoin)
+            {
+                query = query.Skip(spec.Skip).Take(spec.Take);
+            }
+
+            query = spec.Includes.Aggregate(query , (query , includeExpresstion ) => query.Include(includeExpresstion));
 
             return query;
         }
